@@ -2,154 +2,147 @@ let intro = document.querySelector('.intro');
 let logo = document.querySelector('.logo-header');
 let logoSpan = document.querySelectorAll('.logo');
 
-window.addEventListener('DOMContentLoaded', ()=>{
+window.addEventListener('DOMContentLoaded', () => {
 
-    setTimeout(()=>{
-         
-        logoSpan.forEach((span,idx)=>{
-            setTimeout(()=>{
+    setTimeout(() => {
+
+        logoSpan.forEach((span, idx) => {
+            setTimeout(() => {
                 span.classList.add('active');
             }, (idx + 1) * 400)
         });
 
-        setTimeout(()=>{
-            logoSpan.forEach((span, idx)=>{
+        setTimeout(() => {
+            logoSpan.forEach((span, idx) => {
 
-                setTimeout(()=>{
+                setTimeout(() => {
                     span.classList.remove('active');
                     span.classList.add('fade');
                 }, (idx + 1) * 50)
             })
         }, 2000);
 
-        setTimeout(()=>{
+        setTimeout(() => {
             intro.style.top = '-100vh';
         }, 2300)
     })
 })
 
-// Abre o crea la base de datos 'PostalFinderDB' con la versión 1
-const request = indexedDB.open('PostalFinderDB', 1);
+function informacion_cp() {
+    if (navigator.onLine) {
+        $.ajax({
+            url: 'https://api.copomex.com/query/info_cp/' + $("#codigo_postal").val(),
+            data: {
+                token: $("#token").val(),
+                type: 'simplified'
+            },
+            type: 'GET',
+            dataType: 'json',
+            success: function (copomex) {
+                if (!copomex.error) {
+                    $("#cp_response").val(copomex.response.cp);
+                    $("#tipo_asentamiento").val(copomex.response.tipo_asentamiento);
+                    $("#municipio").val(copomex.response.municipio);
+                    $("#estado").val(copomex.response.estado);
+                    $("#ciudad").val(copomex.response.ciudad);
+                    $("#pais").val(copomex.response.pais);
 
-// Maneja el evento de actualización de la base de datos (si cambia la versión)
-request.onupgradeneeded = function (event) {
-  const db = event.target.result;
-  // Crea un almacén de objetos llamado 'codigosPostales' con una clave 'id'
-  db.createObjectStore('codigosPostales', { keyPath: 'id' });
-};
+                    $("#list_colonias").html('');
+                    for (var i = 0; i < copomex.response.asentamiento.length; i++) {
+                        $("#list_colonias").append('<option>' + copomex.response.asentamiento[i] + '</option>');
+                    }
+
+                    // Guardar el último código postal consultado en IndexedDB
+                    saveLastCodigoPostalToDB($("#codigo_postal").val());
+                } else {
+                    console.log('error: ' + copomex.error_message);
+                }
+            },
+            error: function (jqXHR, status, error) {
+                if (jqXHR.status == 400) {
+                    copomex = jqXHR.responseJSON;
+                    alert(copomex.error_message);
+                }
+            },
+            complete: function (jqXHR, status) {
+                console.log('Petición a COPOMEX terminada');
+            }
+        });
+    } else {
+        // Mostrar los datos del último código postal consultado en caso de falta de conexión
+        showLastCodigoPostal();
+    }
+}
 
 // Función para guardar el último código postal consultado en IndexedDB
 function saveLastCodigoPostalToDB(codigoPostal) {
-  const request = indexedDB.open('PostalFinderDB', 1);
+    const request = indexedDB.open('PostalFinderDB', 1);
 
-  request.onsuccess = function (event) {
-      const db = event.target.result;
-      const transaction = db.transaction(['codigosPostales'], 'readwrite');
-      const store = transaction.objectStore('codigosPostales');
-      store.put({ id: 1, codigoPostal: codigoPostal });
-  };
+    request.onupgradeneeded = function (event) {
+        const db = event.target.result;
+        const store = db.createObjectStore('codigosPostales', { keyPath: 'id' });
+        store.add({ id: 1, codigoPostal: codigoPostal });
+    };
+
+    request.onsuccess = function (event) {
+        const db = event.target.result;
+        const transaction = db.transaction(['codigosPostales'], 'readwrite');
+        const store = transaction.objectStore('codigosPostales');
+        store.put({ id: 1, codigoPostal: codigoPostal });
+    };
 }
 
-// Función para obtener el último código postal consultado desde IndexedDB
-function getLastCodigoPostalFromDB() {
-  return new Promise((resolve, reject) => {
-      const request = indexedDB.open('PostalFinderDB', 1);
+function showLastCodigoPostal() {
+    const request = indexedDB.open('PostalFinderDB', 1);
 
-      request.onsuccess = function (event) {
-          const db = event.target.result;
-          const transaction = db.transaction(['codigosPostales'], 'readonly');
-          const store = transaction.objectStore('codigosPostales');
-          const getRequest = store.get(1);
+    request.onupgradeneeded = function (event) {
+        // Este bloque de código es necesario para la creación de la base de datos, pero no es necesario repetirlo aquí
+    };
 
-          getRequest.onsuccess = function (event) {
-              const result = event.target.result;
-              if (result) {
-                  resolve(result.codigoPostal);
-              } else {
-                  reject("No hay registro previo en IndexedDB.");
-              }
-          };
+    request.onsuccess = function (event) {
+        const db = event.target.result;
+        const transaction = db.transaction(['codigosPostales'], 'readonly');
+        const store = transaction.objectStore('codigosPostales');
+        const getRequest = store.get(1);
 
-          getRequest.onerror = function (event) {
-              reject("Error al obtener el último código postal desde IndexedDB.");
-          };
-      };
+        getRequest.onsuccess = function (event) {
+            const result = event.target.result;
 
-      request.onerror = function (event) {
-          reject("Error al abrir IndexedDB.");
-      };
-  });
-}
-
-
-
-
-async function informacion_cp(){
-
-    $.ajax({
-      url : 'https://api.copomex.com/query/info_cp/' + $("#codigo_postal").val(), //aqui va el endpoint de la api de copomex, con el método de info_cp, se deberá concatenar el CP ya que se recibe como parametro en la url, no como variable GET
-      data : { 
-        token : $("#token").val(), //aqui va tu token. Crea una cuenta gratuita para obtener tu token en https://api.copomex.com/panel
-        type : 'simplified'
-      },
-      type : 'GET', //el método http que se usará, COPOMEX solo ocupa método get
-      dataType : 'json', // el tipo de información que se espera de respuesta
-      success : async function(copomex) { // código a ejecutar si la petición es satisfactoria, dentro irá el código personalizado
-
-        if(!copomex.error){ //si NO hubo un error
-
-          $("#cp_response").val(copomex.response.cp); //ingresamos la respuesta del cp, en el input destino
-          $("#tipo_asentamiento").val(copomex.response.tipo_asentamiento); //ingresamos la respuesta del tipo de asentamiento, en el input destino
-          $("#municipio").val(copomex.response.municipio); //ingresamos la respuesta del municipio, en el input destino
-          $("#estado").val(copomex.response.estado); //ingresamos la respuesta del estado, en el input destino
-          $("#ciudad").val(copomex.response.ciudad); //ingresamos la respuesta de la ciudad, en el input destino
-          $("#pais").val(copomex.response.pais); //ingresamos la respuesta del pais, en el input destino
-
-          $("#list_colonias").html(''); //reseteamos el input select para que no se concatene a los nuevos resultados
-          for(var i = 0; i<copomex.response.asentamiento.length; i++){ //iteramos el resultado en un for
-            $("#list_colonias").append('<option>'+copomex.response.asentamiento[i]+'</option>'); //agregamos el item al listado de colonias
-          }
-
-          saveLastCodigoPostalToDB($("#codigo_postal").val());
-        }else{ //si hubo error
-          console.log('error: ' + copomex.error_message);
-
-          try {
-            const lastCodigoPostal = await getLastCodigoPostalFromDB();
-            console.log('Último código postal consultado desde IndexedDB: ' + lastCodigoPostal);
-
-            // Mostrar el aviso de falta de conexión
-            $('#offline-notice').removeClass('d-none');
-
-            // Actualizar los datos en los inputs con los del último código postal
-            $("#cp_response").val(lastCodigoPostal.cp);
-            $("#tipo_asentamiento").val(lastCodigoPostal.tipo_asentamiento);
-            $("#municipio").val(lastCodigoPostal.municipio);
-            $("#estado").val(lastCodigoPostal.estado);
-            $("#ciudad").val(lastCodigoPostal.ciudad);
-            $("#pais").val(lastCodigoPostal.pais);
-            $("#list_colonias").html(''); // Puedes reiniciar el select si es necesario
-            for (var l = 0; l < lastCodigoPostal.asentamiento.length; l++) {
-                $("#list_colonias").append('<option>' + lastCodigoPostal.asentamiento[i] + '</option>');
+            if (result) {
+                // Mostrar los datos del último código postal en los campos correspondientes
+                $("#codigo_postal").val(result.codigoPostal);
+                // También puedes mostrar los demás campos si es necesario
             }
-        } catch (error) {
-            console.log(error);
-        }
-        }
+        };
+    };
+}
 
-      },
-      error : function(jqXHR, status, error) { //si ocurrió un error en el request al endpoint de COPOMEX
+$('#send').on('click',function(e){
+  $.ajax({
+          type: "get",
+            url: 'https://api.copomex.com/query/info_cp/' + $("#codigo_postal").val(),
+          datatype : 'json',
+          success: function(response)
+          {
+             var content_html = '<img src="'+response.message+'"/>'
+             $('#images').html(content_html);
+         },
+         error:function(error){
+          console.log(e.message);
+         },
+         complete: function(data){
+          console.log(data);
+          notificacion($('#codigo_postal').val(), data.responseJSON.message)
 
-          if(jqXHR.status==400){ //el código http 400 significa que algo se mandó mal (Bad Request)
-            copomex = jqXHR.responseJSON;
-            alert(copomex.error_message); //mostramos en un alerta, el error recibido
-          }
+         }
+      });
+})
 
-      },
-      complete : function(jqXHR, status) { // código a ejecutar sin importar si la petición falló o no
-          console.log('Petición a COPOMEX terminada');
+$('#notificaciones').on('click', function (e){
+  Notification.requestPermission().then(function (result){
+      if (result === "granted"){
+          randomNotification();
       }
-    });
-
-  }
+  });
+})
 

@@ -1,26 +1,26 @@
-*{
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: "Poppins", sans-serif;
 }
 
-header{
+header {
     position: relative;
     left: 0;
     top: 0;
-    width: 1005;
+    width: 100%;
     height: 80px;
 }
 
-header h4{
+header h4 {
     position: absolute;
     left: 10%;
     bottom: 1rem;
     font-size: 1.6rem;
 }
 
-.intro{
+.intro {
     position: fixed;
     z-index: 1;
     left: 0;
@@ -31,7 +31,7 @@ header h4{
     transition: 1s;
 }
 
-.logo-header{
+.logo-header {
     position: absolute;
     top: 40%;
     left: 50%;
@@ -39,28 +39,68 @@ header h4{
     color: #ffffff;
 }
 
-.logo{
+.logo {
     position: relative;
     display: inline-block;
     bottom: -20px;
     opacity: 0;
 }
 
-.logo.active{
+.logo.active {
     bottom: 0;
     opacity: 1;
     transition: ease-in-out 0.5s;
 }
 
-.logo.fade{
+.logo.fade {
     bottom: 150px;
     opacity: 0;
     transition: ease-in-out 0.5s;
 }
 
-.stonks{
+.stonks {
     padding-top: 140px;
     height: 100px;
     width: 90px;
 }
 
+/* Nuevos estilos para integrar Bootstrap */
+
+.container {
+    margin-top: 20px;
+}
+
+#offline-notice {
+    margin-top: 20px;
+}
+
+.card {
+    margin: 20px 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.input-group-prepend {
+    margin-bottom: 10px;
+}
+
+.form-control {
+    margin-bottom: 10px;
+}
+
+.btn-primary {
+    background-color: #007BFF;
+    border: none;
+}
+
+.card.my-3 {
+    margin: 20px 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-text label {
+    font-weight: bold;
+}
