@@ -44,7 +44,7 @@
               url: 'https://api.copomex.com/query/info_cp/' + $("#codigo_postal").val(),
               data: {
                   // token: $("#token").val(),
-                  token: "pruebas",
+                  token: "3c575890-8bd1-4186-8fbe-61de9facabb4",
                   type: 'simplified'
               },
               type: 'GET',
