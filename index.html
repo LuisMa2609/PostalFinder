@@ -10,17 +10,13 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script> -->
+    <script src="./node_modules/jquery/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
     <title>PostalFinder</title>
 </head>
 <body>
-
-  <div id="offline-notice" class="alert alert-warning alert-dismissible fade show d-none" role="alert">
-    No hay conexión. Mostrando los datos del último código postal consultado.
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-</div>
 
     <div class="intro">
         <h1 class="logo-header">
@@ -33,6 +29,12 @@
         <h4>Buscador de codigos postales en México.</h4>
     </header>
 
+    <div id="offline-notice" class="alert alert-warning alert-dismissible fade show d-none" role="alert">
+      No hay conexión. Mostrando los datos del último código postal consultado.
+      <div id="data"></div>
+    </div>
+  
+
       <div class="container">
         <div class="row justify-content-center">
           <div class="col-md-6">
@@ -43,12 +45,6 @@
                   <div class="row">
                     <div class="col-6">
 
-                      <div class="input-group mb-3 d-none">
-                        <div class="input-group-prepend">
-                          <span class="input-group-text">Token: <a href="javascript:void(0)" onclick="alert('Registrate y obtén tu token en https://api.copomex.com/panel')"> [?] </a></span>
-                        </div>
-                        <input type="text" class="form-control" placeholder="pruebas" value="pruebas" id="token">
-                      </div>
                 
                       <div class="input-group input-group-sm mb-3">
                         <div class="input-group-prepend">
