@@ -53,7 +53,7 @@ function informacion_cp() {
                     }
 
                     // Guardar el último código postal consultado en IndexedDB
-                    saveLastCodigoPostalToDB($("#codigo_postal").val());
+                    saveLastCodigoPostalToDB(copomex.response);
                 } else {
                     console.log('error: ' + copomex.error_message);
                 }
@@ -75,22 +75,24 @@ function informacion_cp() {
 }
 
 // Función para guardar el último código postal consultado en IndexedDB
-function saveLastCodigoPostalToDB(codigoPostal) {
+function saveLastCodigoPostalToDB(copomexData) {
     const request = indexedDB.open('PostalFinderDB', 1);
 
     request.onupgradeneeded = function (event) {
         const db = event.target.result;
         const store = db.createObjectStore('codigosPostales', { keyPath: 'id' });
-        store.add({ id: 1, codigoPostal: codigoPostal });
+        store.add({ id: 1, copomexData: copomexData });
     };
 
     request.onsuccess = function (event) {
         const db = event.target.result;
         const transaction = db.transaction(['codigosPostales'], 'readwrite');
         const store = transaction.objectStore('codigosPostales');
-        store.put({ id: 1, codigoPostal: codigoPostal });
+        store.put({ id: 1, copomexData: copomexData });
     };
 }
+
+
 
 function showLastCodigoPostal() {
     const request = indexedDB.open('PostalFinderDB', 1);
